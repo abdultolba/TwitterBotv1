@@ -1,7 +1,7 @@
 .#!/usr/local/bin/python3
 
 '''
-    *   Twitter Bot for Python 3 Version 1.0
+    *   Twitter Bot for Python 3.6 Version 1.0
     *   Created by Abdulrahman Tolba on 2/07/17.
     *   Copyright © 2017 Abdulrahman Tolba. All rights reserved.
     '''
