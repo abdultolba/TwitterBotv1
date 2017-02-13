@@ -4,7 +4,7 @@
     *   Twitter Bot for Python 3.6 Version 1.0
     *   Created by Abdulrahman Tolba on 2/07/17.
     *   Copyright © 2017 Abdulrahman Tolba. All rights reserved.
-    '''
+'''
 
 # Importing tweepy to easily access the Twitter API
 import tweepy
