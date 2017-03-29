@@ -1,82 +1,48 @@
-.#!/usr/local/bin/python3
-
-'''
-    *   Twitter Bot for Python 3.6 Version 1.0
-    *   Created by Abdulrahman Tolba on 2/07/17.
-    *   Copyright © 2017 Abdulrahman Tolba. All rights reserved.
-'''
-
-# Importing tweepy to easily access the Twitter API
 import tweepy
-from tweepy.auth import OAuthHandler
-from tweepy.streaming import StreamListener, Stream
+from random import randint
 
-CONSUMER_KEY = 'YOUR CONSUMER KEY HERE'
-CONSUMER_SECRET = 'YOUR CONSUMER SECRET HERE'
-ACCESS_TOKEN = 'YOUR ACCESS TOKEN KEY HERE'
-ACCESS_SECRET = 'YOUR ACCESS SECRET KEY HERE'
+# Authentication details. To  obtain these visit dev.twitter.com
+CONSUMER_KEY = '4gMwcCMGagdcI9uQVPHE43g5f'
+CONSUMER_SECRET = 'seRnttXROzQuHursY9t1XtYeX8aREupBlCGUhLBBOnLamD0eld'
+ACCESS_KEY = '465525633-MbOOrGUs2kreXykPUOvITvWJ7atVzCZe01HQYMO8'
+ACCESS_SECRET = 'bIEfL9rHzP1TiIsqSEvL1MdDj6thrDAXbOwcN8xvVqWBP'
 
-# auth will authorize our account with our unique consumer and access keys.
-auth = OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
-auth.set_access_token(ACCESS_TOKEN, ACCESS_SECRET)
-# api will connect to the Twitter API with auth.
+# Connecting to twitter API using authentication details
+auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
 api = tweepy.API(auth)
 
+usersList = ['','']
+tweetsToTweet = ['','']
 
-class twitterBot(StreamListener):
-    def on_data(self, raw_data):
-        try:
-            isRetweeted = raw_data.lower().split('"retweeted":')[1].split(',"possibly_sensitive"')[0].replace(",", "")
-            # Accessing the tweet's text
-            tweetText = raw_data.lower().split('"text":"')[1].split('","source":"')[0].replace(",", "")
-            # Accessing the username of tweet author
-            userName = raw_data.lower().split('"screen_name":"')[1].split('","location"')[0].replace(",", "")
-            # Accessing the tweet ID number
-            tweetId = raw_data.split('"id":')[1].split('"id_str":')[0].replace(",", "")
-            
-            retweet(tweetId)
-            print("Tweet was retweeted successfully! Tweet URL: ")
-            print("https://twitter.com/" + userName  + "/status/"  + tweetId + "\n")
-            
-            return True
-        except Exception as e:
-            # If an error occurs, tweepy will print the error message to the screen
-            print(str(e))
-            pass
 
-def on_error(self, status_code):
-    print("Error: " + status_code)
+# This is the listener, responsible for receiving data
+class MyStreamListener(tweepy.StreamListener):
+    def on_status(self, status, count=1):
 
-def retweet(tweetId):
-    try:
-        api.retweet(tweetId)
-    except Exception as e:
-        print(str(e))
-        pass
+        # If the tweet comes from @__________
+        if status.user.id_str == "000000000":  # check if actual author I'm trying to track
+            print("@" + status.user.screen_name + ": " + status.text)
+            api.update_status(
+                "@" + status.user.screen_name + tweetsToTweet[randint(0,1)],
+                in_reply_to_status_id=status.id)
 
-def fav(tweetId):
-    try:
-        api.create_favorite(tweetId)
-    except Exception as e:
-        print(str(e))
-        pass
+    # If an error occurs, don't kill the stream and print the error code.
+    def on_error(self, status_code):
+        print(sys.stderr + ' Encountered error with status code: ' + status_code)
+        return True
 
-def tweetPost(tweetText):
-    try:
-        api.update_status(status=tweetText)
-    except Exception as e:
-        print(str(e))
-        pass
+    # If a timeout occurs, don't kill the stream and display 'Timeout...'
+    def on_timeout(self):
+        print(sys.stderr + 'Timeout...')
+        return True  # Don't kill the stream
 
-# Retweet any tweet with these speciifc phrases
-track_words = ["",""]
-# Retweet every tweet from this accounts (user ID's from gettwitterid.com)
-follow_acc = [""]
 
-print("Running...")
-try:
-    twt = Stream(auth, twitterBot())
-    twt.filter(track=track_words)
-except Exception as e:
-    print(str(e))
-pass
+if __name__ == '__main__':
+    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+    auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
+    api = tweepy.API(auth)
+    print("Showing all new tweets from @_______:")
+    streamApi = tweepy.streaming.Stream(auth, MyStreamListener())
+    # Streaming tweets from a certain user (to get ID user getwitterid.com)
+    streamApi.filter(follow=usersList, async=True)
